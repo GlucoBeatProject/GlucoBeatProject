@@ -23,9 +23,6 @@ from fastapi.middleware.cors import CORSMiddleware
 # services/llm_service.py에서 새로운 에이전트 함수 임포트
 from services.llm_service import agent_chat_with_claude, generate_and_update_chat_title, agent_chat_with_claude_stream, generate_and_update_report_title
 
-# oref0 서비스 임포트
-from services.oref0_service import oref0_service
-
 # /dashboard/cgm 응답 모델
 class CgmDayData(BaseModel):
     time: str  # "HH:MM" 형식
@@ -40,6 +37,7 @@ class CgmData(BaseModel):
 class InsulinDayData(BaseModel):
     time: str  # "HH:MM" 형식
     insulin: float
+    algorithm: str
 
 class InsulinData(BaseModel):
     date: date
@@ -177,14 +175,14 @@ async def calculate_decision(request: Request):
                 "smb": recommended_insulin.get("smb"),
                 "algorithm": "oref0"
             }
-            sql_query = f"INSERT INTO insulin_records (id, insulin_amount, time) VALUES ({id}, {recommended_insulin.get("basal") + recommended_insulin.get("smb")}, '{time}')"
+            sql_query = f"INSERT INTO insulin_records (id, insulin_amount, time, algorithm) VALUES ({id}, {recommended_insulin.get('basal') + recommended_insulin.get('smb')}, '{time}', 'OREF0')"
             await query_db_mcp(db_id=config.GLUCOBEAT_DB_ID, query=sql_query, query_type="query")
         else:
             recommended = {
                 "basal": recommended_insulin,
                 "algorithm": "g2p2c"
             }
-            sql_query = f"INSERT INTO insulin_records (id, insulin_amount, time) VALUES ({id}, {recommended_insulin}, '{time}')"
+            sql_query = f"INSERT INTO insulin_records (id, insulin_amount, time, algorithm) VALUES ({id}, {recommended_insulin}, '{time}', 'G2P2C')"
             await query_db_mcp(db_id=config.GLUCOBEAT_DB_ID, query=sql_query, query_type="query")
         
 
@@ -291,10 +289,11 @@ async def get_insulin_history(start_date: date, end_date: date = date.today()):
                 SELECT 
                     DATE(time) as query_date,
                     AVG(insulin_amount) as insulin_mean,
+                    algorithm,
                     JSON_ARRAYAGG(JSON_OBJECT('time', TIME_FORMAT(time, '%H:%i'), 'insulin', insulin_amount)) as insulin_day
                 FROM insulin_records 
                 WHERE DATE(time) = '{start_date}'
-                GROUP BY DATE(time)
+                GROUP BY DATE(time), algorithm
             """
         else:
             # 여러 날짜의 평균 데이터 조회
