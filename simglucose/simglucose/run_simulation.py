@@ -58,7 +58,7 @@ def create_custom_patient():
     return custom_patient
 
 def main():
-    print("🚀 Starting Simglucose with Backend-Orchestra Controller")
+    print("Starting Simglucose with Backend-Orchestra Controller")
     print("=" * 60)
     
     # Backend-Orchestra 서버 연결 확인
@@ -66,10 +66,10 @@ def main():
     try:
         with httpx.Client() as client:
             response = client.get("http://localhost:4000/docs", timeout=5.0)
-            print("✅ Backend-Orchestra server is running")
+            print("Backend-Orchestra server is running")
     except Exception as e:
-        print(f"❌ Backend-Orchestra server is not running: {e}")
-        print("💡 Please start the Backend-Orchestra server first:")
+        print(f"Backend-Orchestra server is not running: {e}")
+        print("Please start the Backend-Orchestra server first:")
         print("   cd backend-orchestrator && python main.py")
         return
     
@@ -80,19 +80,19 @@ def main():
         use_oref0_direct=True  # 새로운 oref0 엔드포인트 사용
     )
     
-    print("🎮 Controller initialized")
-    print("🔗 Backend URL: http://localhost:4000")
+    print("Controller initialized")
+    print("Backend URL: http://localhost:4000")
     print("")
     
     # 3번의 식사 시나리오 자동 설정
-    print("🍽️ Setting up 3 meals automatically:")
+    print("Setting up 3 meals automatically:")
     print("   • 아침: 7시, 45g 탄수화물")
     print("   • 점심: 12시, 70g 탄수화물") 
     print("   • 저녁: 18시, 80g 탄수화물")
     print("")
     
     # 낮은 초기 혈당을 가진 커스텀 환자 생성
-    print("🩸 Creating custom patient with lower initial BG (110 mg/dL)")
+    print("Creating custom patient with lower initial BG (110 mg/dL)")
     custom_patient = create_custom_patient()
     print(f"   • Initial BG: {custom_patient.observation.Gsub:.1f} mg/dL")
     print("")
@@ -110,8 +110,8 @@ def main():
     
     scenario = CustomScenario(start_time=start_time, scenario=meal_scenario)
     
-    print("🏥 Starting simulation...")
-    print("📋 Make sure Backend-Orchestra server is running on port 4000")
+    print("Starting simulation...")
+    print("Make sure Backend-Orchestra server is running on port 4000")
     print("")
     
     try:
@@ -133,18 +133,18 @@ def main():
         
         # 시뮬레이션 실행
         results = sim(sim_obj)
-        print("📊 Simulation results:", results)
+        print("Simulation results:", results)
         
     except KeyboardInterrupt:
-        print("\n⏹️ Simulation stopped by user")
+        print("\nSimulation stopped by user")
     except Exception as e:
-        print(f"\n❌ Simulation error: {e}")
-        print("💡 Make sure all servers are running:")
+        print(f"\nSimulation error: {e}")
+        print("Make sure all servers are running:")
         print("   • Backend-Orchestra: http://localhost:4000")
         print("   • G2P2C Server: http://localhost:8002") 
         print("   • OREF0 Server: http://localhost:8001")
     
-    print("\n✅ Simulation completed")
+    print("\nSimulation completed")
 
 if __name__ == "__main__":
     main() 

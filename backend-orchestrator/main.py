@@ -127,14 +127,6 @@ app = FastAPI(
     swagger_ui_parameters={"docExpansion": "none"} # 처음에는 모든 API를 닫힌 상태로 보여줌
 )
 
-# # 허용할 출처 목록
-# origins = [
-#     "http://localhost:3000",  # React 개발 서버
-#     # 추가로 허용할 출처가 있다면 여기에 추가
-# ]
-
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 주몪!!!!!!!!!!!!!!!!!!!!!
-#혹시 문제가 될 수 있으니 검토좀요...
 origins = [
     "*"  # 모든 출처 허용 (개발 및 테스트용)
 ]
@@ -153,7 +145,8 @@ hub_graph = build_graph()
 
 @app.post("/calculate-decision")
 async def calculate_decision(request: Request):
-    """Simglucose Controller로부터 요청을 받아 그래프를 실행하고 최종 결정을 반환합니다."""
+    """Simglucose Controller로부터 요청을 받아 그래프를 실행하고 최종 결정을 반환"""
+    
     try:
         simglucose_input_data = await request.json()
 
@@ -167,12 +160,12 @@ async def calculate_decision(request: Request):
         # 초기 상태 설정 (DMMS 대신 Simglucose 입력 사용)
         initial_state = {"simglucose_input": simglucose_input_data}
 
-        print(f"🎯 Backend-Orchestra: Starting LangGraph execution...")
+        print(f"Backend-Orchestra: Starting LangGraph execution...")
         
         # LangGraph 실행 (invoke는 동기, stream/astream은 비동기 스트리밍)
         final_state = await hub_graph.ainvoke(initial_state)
 
-        print(f"🎯 Backend-Orchestra: LangGraph execution completed")
+        print(f"Backend-Orchestra: LangGraph execution completed")
         print(f"   Final state keys: {list(final_state.keys()) if final_state else 'None'}")
 
         # 최종 결정만 추출하여 반환
@@ -195,13 +188,13 @@ async def calculate_decision(request: Request):
             await query_db_mcp(db_id=config.GLUCOBEAT_DB_ID, query=sql_query, query_type="query")
         
 
-        print(f"🎯 Backend-Orchestra: Sending final decision: {final_decision.get('recommended_insulin', 'N/A')} units")
+        print(f"Backend-Orchestra: Sending final decision: {final_decision.get('recommended_insulin', 'N/A')} units")
         print(f"   Final decision: {final_decision}")
         
         return recommended
         
     except Exception as e:
-        print(f"❌ Backend-Orchestra: Error processing request: {e}")
+        print(f"Backend-Orchestra: Error processing request: {e}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
@@ -210,11 +203,6 @@ async def calculate_decision(request: Request):
 async def calculate_oref0_decision(request: Oref0Request):
     """oref0 알고리즘을 사용하여 인슐린 투여 결정을 계산합니다."""
     try:
-        print(f"🎯 Oref0: Received request for patient {request.patient_name}")
-        print(f"   Current CGM: {request.current_cgm} mg/dL")
-        print(f"   Carbs: {request.carbs}g, COB: {request.cob}g")
-        print(f"   CGM history length: {len(request.cgm_history)}")
-        print(f"   Insulin history length: {len(request.insulin_history)}")
         
         # simglucose 형식으로 데이터 변환
         simglucose_data = {
@@ -230,15 +218,14 @@ async def calculate_oref0_decision(request: Oref0Request):
         # oref0 서비스로 결정 계산
         result = oref0_service.process_simglucose_request(simglucose_data)
         
-        print(f"🎯 Oref0: Decision calculated")
+        print(f"Oref0: Decision calculated")
         print(f"   Recommended insulin: {result.get('recommended_insulin', 0)} units")
         print(f"   SMB enabled: {result.get('smb_enabled', False)}")
-        print(f"   Reason: {result.get('reason', 'No reason')}")
         
         return Oref0Response(**result)
         
     except Exception as e:
-        print(f"❌ Oref0: Error calculating decision: {e}")
+        print(f"Oref0: Error calculating decision: {e}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Oref0 calculation error: {str(e)}")
@@ -490,7 +477,7 @@ async def get_chat_messages(chat_id: int = Path(..., title="채팅방 ID")):
 @app.delete("/chat/{chat_id}", tags=["LLM채팅"])
 async def delete_chat_room(chat_id: int = Path(..., title="삭제할 채팅방 ID")):
     """
-    채팅방과 관련된 모든 메시지를 삭제합니다.
+    채팅방과 관련된 모든 메시지를 삭제
     - chat_id: 삭제할 채팅방의 고유 ID
     """
     print(f"채팅방 삭제 요청: chat_id={chat_id}")
@@ -555,7 +542,7 @@ async def send_chat_message(
     chat_history = []
     try:
         import json
-        #? 1. DB에서 전체 대화 기록 조회
+        #DB에서 전체 대화 기록 조회
         history_query_template = "SELECT message FROM chat_messages WHERE chat_id = %s ORDER BY created_at ASC"
         db_result = await query_db_mcp(
             db_id=config.GLUCOBEAT_DB_ID,
@@ -573,7 +560,7 @@ async def send_chat_message(
         print(f"WARN: DB에서 채팅 기록 조회 실패: {e}")
         chat_history = []
 
-    # --- 2단계: LLM으로 응답 처리하기 (Process) ---
+    # LLM으로 응답 처리하기 (Process)
     # 사용자 메시지를 메모리에만 추가 (아직 DB에 저장하지 않음)
     user_message = {"role": "user", "content": new_message.msg}
     chat_history.append(user_message)
@@ -593,7 +580,7 @@ async def send_chat_message(
         new_ai_messages = await llm_task
 
     
-    # --- 3단계: 모든 새 메시지 한번에 저장하기 (Save) ---
+    # 모든 새 메시지 한번에 저장
     # 저장할 메시지 리스트 = [사용자 메시지] + [새 AI 메시지들]
     messages_to_save = [user_message] + new_ai_messages
     
@@ -630,9 +617,10 @@ async def stream_chat_message(
     if not new_message or not new_message.msg:
         return {"message": "메시지가 비어있습니다."}
 
-    # --- 1단계: DB에서 기록 불러오기 (Load) ---
+    # DB에서 기록 불러오기
     chat_history = []
     try:
+        # 파라미터화된 쿼리로 이전 대화 기록을 안전하게 조회
         # 파라미터화된 쿼리로 이전 대화 기록을 안전하게 조회
         history_query = "SELECT message FROM chat_messages WHERE chat_id = %s ORDER BY created_at ASC"
         history_result = await query_db_mcp(
@@ -646,19 +634,23 @@ async def stream_chat_message(
     except Exception as e:
         print(f"WARN: DB 조회 실패: {e}")
 
-    # --- 2단계: 첫 메시지인지 판단하고, 맞다면 진단 정보 추가 ---
+    # 첫 메시지인지 판단하고, 맞다면 진단 정보 추가
     
     # 사용자가 보낸 실제 메시지 내용을 먼저 정의
+    # 사용자가 보낸 실제 메시지 내용을 먼저 정의
     user_content = new_message.msg
+    is_first_message = not chat_history # 첫 메시지 판단 조건 수정 (길이가 0이면 True)
     is_first_message = not chat_history # 첫 메시지 판단 조건 수정 (길이가 0이면 True)
 
     if is_first_message:
         print(f"DEBUG: 첫 메시지 감지 (chat_id: {chat_id}). 진단 정보 추가 및 제목 생성 시작.")
         
         # 제목 생성은 백그라운드에서 실행
+        # 제목 생성은 백그라운드에서 실행
         background_tasks.add_task(generate_and_update_chat_title, chat_id, new_message.msg)
         
         try:
+            # 파라미터화된 쿼리로 진단 정보 조회
             # 파라미터화된 쿼리로 진단 정보 조회
             diag_query = "SELECT dia_message FROM diagnosis WHERE id = %s ORDER BY created_at DESC LIMIT 1"
             diagnosis_result = await query_db_mcp(
@@ -681,7 +673,7 @@ async def stream_chat_message(
         except Exception as e:
             print(f"WARN: 진단 정보 조회 또는 추가 실패: {e}")
 
-    # --- 3단계: 최종 메시지 객체 생성 및 스트리밍 시작 ---
+    # 최종 메시지 객체 생성 및 스트리밍 시작
     user_message = {"role": "user", "content": user_content}
     chat_history.append(user_message)
 
@@ -714,7 +706,7 @@ async def _stream_generator(
             # 백엔드에서 받은 이벤트 문자열(event_str)을 그대로 클라이언트에 전달
             yield event_str
             
-            # --- DB 저장을 위해 내부적으로 메시지 수집 ---
+            # DB 저장을 위해 내부적으로 메시지 수집
             # 'data: ' 접두사를 제거하고 JSON 파싱
             if event_str.strip().startswith("data:"):
                 json_str = event_str.strip()[6:]
@@ -748,7 +740,7 @@ async def _stream_generator(
         yield f"data: {json.dumps(error_event)}\n\n"
     
     finally:
-        # --- 스트림이 정상 또는 비정상 종료된 후 항상 실행 ---
+        # 스트림이 정상 또는 비정상 종료된 후 항상 실행 
         print("스트림이 종료되었습니다. DB 저장을 시도합니다.")
         
         # 지금까지 수집된 assistant 텍스트 메시지를 최종 저장 목록에 추가
@@ -842,10 +834,7 @@ async def create_report_and_ask_question():
     그 결과(DB 조회 결과 제외)를 DB에 저장합니다.
     """
 
-    # --- 1단계, 2단계, 3단계는 이전과 동일 ---
-    # (코드 생략)
-    # ...
-    # --- 1단계: 새로운 리포트 레코드 생성 ---
+    # 새로운 리포트 레코드 생성
     new_report_id = None
     try:
         new_uuid = str(uuid.uuid4())
@@ -872,7 +861,7 @@ async def create_report_and_ask_question():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB에 리포트 레코드 생성 실패: {e}")
 
-    # --- 2단계: LLM을 이용한 리포트 내용 생성 ---
+    # LLM을 이용한 리포트 내용 생성
     report_generation_prompt = (
         "오늘로부터 일주일 간의 혈당 데이터를 분석해서, 사용자가 자신의 건강 상태를 "
         "한눈에 파악할 수 있는 주간 리포트를 작성해주세요. "
@@ -886,7 +875,7 @@ async def create_report_and_ask_question():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"LLM으로 리포트 생성 중 오류 발생: {e}")
         
-    # --- 3단계: 생성된 리포트 내용을 기반으로 제목 자동 생성 ---
+    # 생성된 리포트 내용을 기반으로 제목 자동 생성
     final_answer_message = {}
     if llm_full_trace:
         for message in reversed(llm_full_trace):
@@ -896,15 +885,13 @@ async def create_report_and_ask_question():
     
     report_content_for_title = final_answer_message.get("content", "")
     
-    # (핵심 변경) 복잡한 로직 대신, 서비스 함수를 단 한 줄로 호출!
     generated_title = await generate_and_update_report_title(
         report_id=new_report_id, 
         report_content=report_content_for_title
     )
 
-    # --- 4단계: (수정) DB 조회 결과를 제외하고 최종 내용 저장 ---
+    # DB 조회 결과를 제외하고 최종 내용 저장
     
-    # (핵심 수정) DB에 저장할 내용에서 'tool' 역할을 가진 메시지(DB 조회 결과)를 필터링합니다.
     messages_to_save = [
         msg for msg in llm_full_trace if msg.get("role") != "tool"
     ]
@@ -922,7 +909,7 @@ async def create_report_and_ask_question():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"생성된 리포트 DB 업데이트 실패: {e}")
 
-    # --- 5단계: 최종 결과 반환 ---
+    # 최종 결과 반환
     return {
         "message": "새로운 리포트 및 제목 자동 생성 성공",
         "new_report_id": new_report_id,
@@ -938,32 +925,32 @@ async def delete_report(report_id: int = Path(..., title="삭제할 리포트의
     print(f"리포트 삭제 요청: report_id={report_id}")
 
     try:
-        # 1. 삭제 전, 리포트가 실제로 존재하는지 확인합니다.
+        # 삭제 전, 리포트가 실제로 존재하는지 확인
         check_query = f"SELECT COUNT(*) as count FROM user_reports WHERE report_id = {report_id}"
         check_result = await query_db_mcp(db_id=config.GLUCOBEAT_DB_ID, query=check_query)
         
         if not check_result.get("rows") or check_result["rows"][0].get("count", 0) == 0:
-            # 존재하지 않는 리포트일 경우, 404 Not Found 에러를 반환합니다.
+            # 존재하지 않는 리포트일 경우, 404 Not Found 에러를 반환
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Report with id {report_id} not found."
             )
 
-        # 2. 리포트가 존재하면 삭제 쿼리를 실행합니다.
+        # 리포트가 존재하면 삭제 쿼리를 실행
         delete_query = f"DELETE FROM user_reports WHERE report_id = {report_id}"
         await query_db_mcp(db_id=config.GLUCOBEAT_DB_ID, query=delete_query)
 
-        # 3. 모든 과정이 성공적으로 끝나면 성공 응답을 반환합니다.
+        # 모든 과정이 성공적으로 끝나면 성공 응답을 반환
         return JSONResponse(
             content={"success": True, "message": f"리포트(id: {report_id})가 성공적으로 삭제되었습니다."},
             status_code=status.HTTP_200_OK
         )
 
     except HTTPException as e:
-        # 404 에러는 그대로 다시 발생시킵니다.
+        # 404 에러는 그대로 다시 발생시킴
         raise e
     except Exception as e:
-        # 그 외 DB 연결 오류 등 예상치 못한 에러가 발생했을 경우 500 에러를 반환합니다.
+        # 그 외 DB 연결 오류 등 예상치 못한 에러가 발생했을 경우 500 에러를 반환
         print(f"리포트 삭제 중 서버 오류 발생: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

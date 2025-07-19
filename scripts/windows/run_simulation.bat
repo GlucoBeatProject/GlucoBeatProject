@@ -23,7 +23,7 @@ echo [4/5] Starting ml-g2p2c...
 start "ML-G2P2C" cmd /k "call scripts\simglucose_g2p2c\Scripts\activate && cd ml-g2p2c && python main.py"
 
 echo [5/5] Starting simglucose simulation...
-start "SimGlucose" cmd /k "call scripts\simglucose_g2p2c\Scripts\activate && cd simglucose && python run_simulation_programmatic.py"
+start "SimGlucose" cmd /k "call scripts\simglucose_g2p2c\Scripts\activate && cd simglucose\simglucose && python run_simulation_programmatic.py"
 
 echo ========================================
 echo All simulation components started!
