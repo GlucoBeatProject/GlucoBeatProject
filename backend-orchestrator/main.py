@@ -633,7 +633,7 @@ async def stream_chat_message(
     # --- 1단계: DB에서 기록 불러오기 (Load) ---
     chat_history = []
     try:
-        # ✨ 파라미터화된 쿼리로 이전 대화 기록을 안전하게 조회
+        # 파라미터화된 쿼리로 이전 대화 기록을 안전하게 조회
         history_query = "SELECT message FROM chat_messages WHERE chat_id = %s ORDER BY created_at ASC"
         history_result = await query_db_mcp(
             db_id=config.GLUCOBEAT_DB_ID,
@@ -648,18 +648,18 @@ async def stream_chat_message(
 
     # --- 2단계: 첫 메시지인지 판단하고, 맞다면 진단 정보 추가 ---
     
-    # ✨ 사용자가 보낸 실제 메시지 내용을 먼저 정의
+    # 사용자가 보낸 실제 메시지 내용을 먼저 정의
     user_content = new_message.msg
-    is_first_message = not chat_history # ✨ 첫 메시지 판단 조건 수정 (길이가 0이면 True)
+    is_first_message = not chat_history # 첫 메시지 판단 조건 수정 (길이가 0이면 True)
 
     if is_first_message:
         print(f"DEBUG: 첫 메시지 감지 (chat_id: {chat_id}). 진단 정보 추가 및 제목 생성 시작.")
         
-        # ✨ 제목 생성은 백그라운드에서 실행
+        # 제목 생성은 백그라운드에서 실행
         background_tasks.add_task(generate_and_update_chat_title, chat_id, new_message.msg)
         
         try:
-            # ✨ 파라미터화된 쿼리로 진단 정보 조회
+            # 파라미터화된 쿼리로 진단 정보 조회
             diag_query = "SELECT dia_message FROM diagnosis WHERE id = %s ORDER BY created_at DESC LIMIT 1"
             diagnosis_result = await query_db_mcp(
                 db_id=config.GLUCOBEAT_DB_ID,
@@ -667,17 +667,17 @@ async def stream_chat_message(
                 params=(1,) # user_id=1로 가정
             )
             
-            # ✨ DB 조회 결과를 올바르게 처리
-            if diagnosis_result.get("rows"):
-                diagnosis_text = diagnosis_result["rows"][0]["dia_message"]
-                # ✨ TypeError를 수정하고, 명확한 형식으로 사용자 메시지에 진단 정보를 추가
-                instructional_content = (
-                    f"[시스템 참고사항: 아래는 의사 진단 내용입니다. 이 내용을 참고하여 다음 질문에 답변하세요.]\n"
-                    f"---\n{diagnosis_text}\n---\n\n"
+            # diagnosis_text = diagnosis_result["rows"][0]["dia_message"]
+            system_message = {
+                "role": "system",
+                "content": (
+                    "[시스템 참고사항: 아래는 의사 진단 내용입니다. 이 내용을 참고하여 다음 질문에 답변하세요.]\n"
+                    f"[{diagnosis_result}]"
                 )
-                # ✨ 실제 사용자 질문 앞에 참고사항을 붙여줌
-                user_content = instructional_content + user_content
+            }
+            chat_history.append(system_message) # 대화 목록 맨 앞에 추가
             
+            print(f"첫 메시지 관련 처리 완료한 챗 히스토리 : {chat_history}")
         except Exception as e:
             print(f"WARN: 진단 정보 조회 또는 추가 실패: {e}")
 
@@ -700,6 +700,8 @@ async def _stream_generator(
     
     new_messages_from_llm = [] # DB에 저장할 AI 메시지를 수집하는 리스트
     current_assistant_message = "" # 스트리밍 중인 텍스트 조각을 모으는 변수
+    
+    print(f"실제로 LLM이 보는 입력 : {chat_history}")
 
     try:
         # LLM 스트리밍 서비스 호출
@@ -755,6 +757,8 @@ async def _stream_generator(
 
         # 저장할 메시지 = [사용자 메시지] + [수집된 AI 메시지들]
         messages_to_save = [user_message] + new_messages_from_llm
+        
+        print(f"저장할 메시지 : {messages_to_save}")
 
         try:
             insert_sql = "INSERT INTO chat_messages (chat_id, message) VALUES (%s, %s)"
@@ -892,7 +896,7 @@ async def create_report_and_ask_question():
     
     report_content_for_title = final_answer_message.get("content", "")
     
-    # ✨ (핵심 변경) 복잡한 로직 대신, 서비스 함수를 단 한 줄로 호출!
+    # (핵심 변경) 복잡한 로직 대신, 서비스 함수를 단 한 줄로 호출!
     generated_title = await generate_and_update_report_title(
         report_id=new_report_id, 
         report_content=report_content_for_title
@@ -900,7 +904,7 @@ async def create_report_and_ask_question():
 
     # --- 4단계: (수정) DB 조회 결과를 제외하고 최종 내용 저장 ---
     
-    # ✨ (핵심 수정) DB에 저장할 내용에서 'tool' 역할을 가진 메시지(DB 조회 결과)를 필터링합니다.
+    # (핵심 수정) DB에 저장할 내용에서 'tool' 역할을 가진 메시지(DB 조회 결과)를 필터링합니다.
     messages_to_save = [
         msg for msg in llm_full_trace if msg.get("role") != "tool"
     ]
