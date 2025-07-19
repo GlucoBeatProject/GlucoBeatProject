@@ -3,14 +3,14 @@ echo ========================================
 echo GlucoBeat Web Runner (Windows)
 echo ========================================
 
-cd /d "%~dp0.."
+cd /d "%~dp0..\.."
 
 echo Starting Backend Services...
 echo [1/3] Starting backend-orchestrator...
-start "Backend Orchestrator" cmd /k "call backend_mcp\Scripts\activate && cd backend-orchestrator && python main.py"
+start "Backend Orchestrator" cmd /k "call scripts\backend_mcp\Scripts\activate && cd backend-orchestrator && python main.py"
 
 echo [2/3] Starting mcp-db-server...
-start "MCP DB Server" cmd /k "call backend_mcp\Scripts\activate && cd mcp-db-server && python main.py"
+start "MCP DB Server" cmd /k "call scripts\backend_mcp\Scripts\activate && cd mcp-db-server && python main.py"
 
 timeout /t 5 /nobreak >nul
 

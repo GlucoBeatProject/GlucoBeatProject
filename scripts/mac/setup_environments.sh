@@ -1,35 +1,36 @@
 #!/bin/bash
-
 echo "========================================"
 echo "GlucoBeat Environment Setup (macOS)"
 echo "========================================"
 
-# 프로젝트 루트 디렉토리로 이동
-cd "$(dirname "$0")/.."
+# Navigate to project root
+cd "$(dirname "$0")/../.."
 
-echo "[1/6] Creating and setting up backend_mcp virtual environment..."
-if [ ! -d "backend_mcp" ]; then
-    echo "Creating backend_mcp virtual environment..."
-    python3 -m venv backend_mcp
+echo "[1/6] Setting up backend_mcp virtual environment..."
+if [ -f "scripts/backend_mcp/bin/python" ]; then
+    echo "Using existing backend_mcp virtual environment..."
+    source scripts/backend_mcp/bin/activate
+    echo "Installing backend_mcp_requirement.txt..."
+    pip install -r scripts/backend_mcp_requirement.txt
+    deactivate
+else
+    echo "Error: backend_mcp virtual environment not found in scripts/backend_mcp/"
+    echo "Please create the virtual environment first."
+    exit 1
 fi
-echo "Activating backend_mcp and installing dependencies..."
-source backend_mcp/bin/activate
-echo "Installing backend_mcp_requirement.txt..."
-pip install -r backend_mcp_requirement.txt
-echo "Installing main requirement.txt..."
-pip install -r requirement.txt
-deactivate
 
-echo "[2/6] Creating and setting up simglucose_g2p2c virtual environment..."
-if [ ! -d "simglucose_g2p2c" ]; then
-    echo "Creating simglucose_g2p2c virtual environment..."
-    python3 -m venv simglucose_g2p2c
+echo "[2/6] Setting up simglucose_g2p2c virtual environment..."
+if [ -f "scripts/simglucose_g2p2c/bin/python" ]; then
+    echo "Using existing simglucose_g2p2c virtual environment..."
+    source scripts/simglucose_g2p2c/bin/activate
+    echo "Installing simglucose_g2p2c_requirements.txt..."
+    pip install -r scripts/simglucose_g2p2c_requirements.txt
+    deactivate
+else
+    echo "Error: simglucose_g2p2c virtual environment not found in scripts/simglucose_g2p2c/"
+    echo "Please create the virtual environment first."
+    exit 1
 fi
-echo "Activating simglucose_g2p2c and installing dependencies..."
-source simglucose_g2p2c/bin/activate
-echo "Installing simglucose_g2p2c_requirements.txt..."
-pip install -r simglucose_g2p2c_requirements.txt
-deactivate
 
 echo "[3/6] Setting up frontend dependencies..."
 cd frontend
@@ -51,34 +52,34 @@ else
 fi
 cd ../..
 
-echo "[5/6] Setting up oref0-official dependencies..."
-cd oref0-official
-if [ -f "package.json" ]; then
-    echo "Installing oref0-official dependencies..."
-    npm install
+echo "[5/6] Setting up ml-g2p2c dependencies..."
+if [ -f "ml-g2p2c/G2P2C/requirements.txt" ]; then
+    echo "Installing ml-g2p2c requirements..."
+    source scripts/simglucose_g2p2c/bin/activate
+    pip install -r ml-g2p2c/G2P2C/requirements.txt
+    deactivate
 else
-    echo "Warning: package.json not found in oref0-official, skipping npm install"
+    echo "Warning: requirements.txt not found in ml-g2p2c/G2P2C, skipping pip install"
 fi
-cd ..
 
 echo "[6/6] Verification..."
 echo "Checking virtual environments:"
-if [ -f "backend_mcp/bin/python" ]; then
-    echo "✓ backend_mcp virtual environment created"
+if [ -f "scripts/backend_mcp/bin/python" ]; then
+    echo "✓ backend_mcp virtual environment found"
 else
-    echo "✗ backend_mcp virtual environment failed"
+    echo "✗ backend_mcp virtual environment not found"
 fi
-if [ -f "simglucose_g2p2c/bin/python" ]; then
-    echo "✓ simglucose_g2p2c virtual environment created"
+if [ -f "scripts/simglucose_g2p2c/bin/python" ]; then
+    echo "✓ simglucose_g2p2c virtual environment found"
 else
-    echo "✗ simglucose_g2p2c virtual environment failed"
+    echo "✗ simglucose_g2p2c virtual environment not found"
 fi
 
 echo "========================================"
 echo "Environment setup completed!"
 echo "========================================"
-echo "Virtual environments created:"
-echo "- backend_mcp (for backend services)"
-echo "- simglucose_g2p2c (for ML and simulation)"
+echo "Virtual environments used:"
+echo "- scripts/backend_mcp (for backend services)"
+echo "- scripts/simglucose_g2p2c (for ML and simulation)"
 echo "Node.js dependencies installed for frontend and algorithm modules"
 echo "========================================" 
