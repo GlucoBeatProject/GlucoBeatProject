@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="E:\test\1\glucobeat-project\simglucose_g2p2c"
+VIRTUAL_ENV="E:\test\1\glucobeat-project\scripts\simglucose_g2p2c"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

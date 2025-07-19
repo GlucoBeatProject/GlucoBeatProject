@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=E:\test\1\glucobeat-project\simglucose_g2p2c
+set VIRTUAL_ENV=E:\test\1\glucobeat-project\scripts\simglucose_g2p2c
 
 if not defined PROMPT set PROMPT=$P$G
 
