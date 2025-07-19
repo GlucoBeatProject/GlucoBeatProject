@@ -41,7 +41,7 @@ def get_system_prompt() -> str:
 3. 진단 정보와 데이터를 바탕으로 통찰력 있는 관찰을 보이십시오.
 
 # 4. 의사 진단 정보
-첫 번째 사용자 입력으로 진단 정보가 입력될 것입니다. 만약 없다면, 필요가 없는 작업을 수행하는 것입니다. 
+첫 번째 시스템 입력으로 진단 정보가 입력될 것입니다. 만약 없다면, 필요가 없는 작업을 수행하는 것입니다. 
 
 # 5. 도구 사용법 (`query_database`)
 - **사용 시점**: 대화 기록이나 진단 내역에 없는 사용자의 특정 데이터를 조회해야 할 때 사용합니다.
@@ -121,7 +121,7 @@ async def agent_chat_with_claude(chat_history: List[Dict[str, str]]) -> List[Dic
             elif role == "assistant":
                 messages.append(AIMessage(content=content))
 
-        # 입력 메시지의 개수를 미리 저장
+        # (핵심 수정 1) 입력 메시지의 개수를 미리 저장합니다.
         input_message_count = len(messages)
 
         # LangGraph 에이전트 실행
@@ -129,12 +129,12 @@ async def agent_chat_with_claude(chat_history: List[Dict[str, str]]) -> List[Dic
         result = await app.ainvoke(inputs)
         final_messages = result.get("messages", [])
         
-        # 새로 추가된 메시지만 잘라냄
+        # (핵심 수정 2) 새로 추가된 메시지만 잘라냅니다.
         newly_added_messages = final_messages[input_message_count:]
 
         # 새로 추가된 메시지들만 dict 형식으로 변환
         new_messages_as_dicts = []
-        # '새로 추가된 메시지'에 대해서만 루프를 실행
+        # (핵심 수정 3) '새로 추가된 메시지'에 대해서만 루프를 실행합니다.
         for msg in newly_added_messages:
             role = "unknown"
             content = ""
@@ -193,6 +193,8 @@ async def agent_chat_with_claude_stream(chat_history: List[Dict[str, str]]):
             messages.append(HumanMessage(content=content))
         elif role == "assistant":
             messages.append(AIMessage(content=content))
+        elif role == "system" :
+            messages.append(SystemMessage(content=content))
 
     # LangGraph Stateless 실행 (main.py chat_history 기반)
     inputs = {"messages": messages}
@@ -371,7 +373,6 @@ async def generate_and_update_report_title(report_id: int, report_content: str) 
         if len(generated_title) > 50:
             generated_title = generated_title[:47] + "..."
         
-        # 업데이트할 테이블과 컬럼, ID를 리포트에 맞게 수정
         update_sql = f"""
             UPDATE user_reports 
             SET report_title = '{generated_title.replace("'", "''")}' 
