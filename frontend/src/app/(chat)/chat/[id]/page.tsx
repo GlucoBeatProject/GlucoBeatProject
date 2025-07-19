@@ -7,9 +7,9 @@ async function ChatDetailPage({ params }: { params: { id: string } }) {
   ).json();
 
   return (
-    <div className="px-4 mt-5 pb-5">
+    <>
       <ChatBox chat_id={id} initialData={chatData.messages} />
-    </div>
+    </>
   );
 }
 

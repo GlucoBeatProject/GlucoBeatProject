@@ -14,7 +14,7 @@ export default async function NewChatLayout({
       <SideBar chatData={res} />
       <div className="relative w-full">
         <Header type="chat" chatData={res} />
-        <div className="lg:max-w-[720px] mx-auto">{children}</div>
+        <div className="lg:max-w-[720px] mx-auto px-4 pt-4">{children}</div>
       </div>
     </SidebarProvider>
   );

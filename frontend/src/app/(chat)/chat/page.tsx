@@ -30,7 +30,7 @@ export default function ChatUnifiedPage() {
   };
 
   return (
-    <div className="px-4 mt-5 pb-5">
+    <>
       {chatId === null ? (
         <div className="min-h-[calc(100dvh-200px)] flex flex-col items-center justify-center text-center">
           <h2 className="text-lg font-semibold mb-4">무엇을 도와드릴까요?</h2>
@@ -56,6 +56,6 @@ export default function ChatUnifiedPage() {
       {chatId === null ? (
         <ChatInput onSend={sendFirstMessage} isDisabled={loading} />
       ) : null}
-    </div>
+    </>
   );
 }
