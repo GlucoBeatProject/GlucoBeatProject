@@ -1,5 +1,4 @@
 import Link from 'next/link';
-
 import DashboardContent from '@/components/dashboard/DashboardContent';
 import {
   Card,
@@ -35,34 +34,18 @@ export default async function Home() {
 
   const recentDia = await (
     await fetch(`http://127.0.0.1:4000/diagnosis?user_id=1`)
-  ).json(); // [{ dia_id, diagnosis_preview, created_at }]
-
-  const hasRecentDia = Array.isArray(recentDia) && recentDia.length > 0;
-
-  // 최근 진단서 중 created_at으로 가장 최신 것 찾기
-  let latestDiaId: number | null = null;
-
-  if (hasRecentDia) {
-    // ISO 문자열을 Date로 변환 후 비교
-    const latestDia = recentDia.reduce((prev, curr) =>
-      new Date(prev.created_at) > new Date(curr.created_at) ? prev : curr
+  )
+    .json()
+    .then(
+      async (data) =>
+        await (
+          await fetch(`http://127.0.0.1:4000/diagnosis/${data[0].dia_id}`)
+        ).json()
     );
-    latestDiaId = latestDia.dia_id;
-  }
-
-  // dia_id가 있으면 상세 API 호출해서 상세 정보 받기
-  let diagnosisDetail: { dia_message?: string } = {};
-  if (latestDiaId !== null) {
-    diagnosisDetail = await (
-      await fetch(`http://127.0.0.1:4000/diagnosis/${latestDiaId}`)
-    ).json();
-  }
 
   return (
     <div className="mt-4 flex flex-col gap-4">
-      {/* 상단 3분할 카드 섹션 */}
       <section className="grid grid-cols-1 md:grid-cols-6 gap-5">
-        {/* 최근 혈당 */}
         <Card className="md:col-span-2 h-full">
           <CardHeader>
             <CardTitle>최근 혈당</CardTitle>
@@ -89,9 +72,7 @@ export default async function Home() {
           </CardContent>
         </Card>
 
-        {/* 센서 상태 카드: 패치와 CGM 센서 위아래 분리 */}
         <div className="md:col-span-1 flex flex-col gap-5 min-h-[200px]">
-          {/* "패치" 카드에 flex-1 추가 */}
           <Card className="flex-1 flex flex-col justify-between">
             <CardHeader>
               <CardTitle>패치</CardTitle>
@@ -101,7 +82,6 @@ export default async function Home() {
             </CardContent>
           </Card>
 
-          {/* "CGM 센서" 카드에도 flex-1 추가 */}
           <Card className="flex-1 flex flex-col justify-between">
             <CardHeader>
               <CardTitle>CGM 센서</CardTitle>
@@ -119,26 +99,19 @@ export default async function Home() {
               <CardTitle className="text-lg font-semibold text-gray-800">
                 최근 의사의 진단
               </CardTitle>
-              {/* <Link
-                href="/diagnosis"
-                className="text-sm px-3 py-1 bg-white text-primary rounded-md hover:underline"
-              >
-                나의 진단 내역 →
-              </Link> */}
             </div>
             <CardDescription className="mt-2 text-sm text-gray-500">
-              진단일:{' '}
-              {format(parseISO(diagnosisDetail.created_at), 'yyyy년 M월 d일')}
+              진단일: {format(parseISO(recentDia.created_at), 'yyyy년 M월 d일')}
             </CardDescription>
           </CardHeader>
 
           <CardContent className="text-sm leading-relaxed text-gray-800 whitespace-pre-line">
-            {diagnosisDetail.dia_message || '진단 내역이 없습니다.'}
+            {recentDia.dia_message || '진단 내역이 없습니다.'}
           </CardContent>
 
           <CardFooter className="justify-end p-0 mt-4">
             <Link
-              href={`/diagnosis/${latestDiaId}`}
+              href={`/diagnosis/${recentDia.dia_id}`}
               className="text-sm text-primary hover:underline"
             >
               더보기
