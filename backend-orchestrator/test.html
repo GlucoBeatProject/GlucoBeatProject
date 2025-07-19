@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>스트리밍 테스트 클라이언트</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; padding: 20px; }
+        #responseArea { white-space: pre-wrap; border: 1px solid #ccc; padding: 15px; margin-top: 15px; min-height: 100px; background-color: #f9f9f9; border-radius: 5px; }
+        input { padding: 8px; width: 400px; border-radius: 3px; border: 1px solid #ccc; }
+        button { padding: 8px 15px; border: none; background-color: #007bff; color: white; border-radius: 3px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        i { color: #888; }
+    </style>
+</head>
+<body>
+    <h1>LLM 스트리밍 테스트</h1>
+    <p>채팅 ID: <input type="number" id="chatId" value="1"> </p>
+    <p>메시지: <input type="text" id="messageInput" placeholder="메시지를 입력하세요..." size="50">
+    <button onclick="sendMessage()">전송</button></p>
+    <hr>
+    <h3>응답:</h3>
+    <div id="responseArea"></div>
+
+    <script>
+        async function sendMessage() {
+            const chatIdInput = document.getElementById('chatId');
+            const messageInput = document.getElementById('messageInput');
+            const responseArea = document.getElementById('responseArea');
+            
+            const message = messageInput.value;
+            const chatId = chatIdInput.value;
+
+            if (!message || !chatId) {
+                alert("채팅 ID와 메시지를 모두 입력해주세요.");
+                return;
+            }
+
+            // UI 초기화
+            responseArea.innerHTML = '응답 수신 중...';
+            document.querySelector('button').disabled = true;
+
+            try {
+                const response = await fetch(`http://127.0.0.1:4000/chat/${chatId}/message/stream`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ msg: message }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`서버 에러: ${response.status} ${response.statusText}`);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                responseArea.innerHTML = ''; // 응답 시작 시 초기화
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    const lines = chunk.split('\n\n');
+
+                    for (const line of lines) {
+                        if (line.trim().startsWith('data: ')) {
+                            const jsonString = line.substring(6);
+                            if (!jsonString) continue;
+
+                            try {
+                                const eventData = JSON.parse(jsonString);
+                                if (eventData.type === 'text') {
+                                    responseArea.innerHTML += eventData.content;
+                                } else if (eventData.type === 'tool_call') {
+                                    responseArea.innerHTML += `<br><i>[도구 호출: ${eventData.content.name}]</i><br>`;
+                                } else if (eventData.type === 'error') {
+                                     responseArea.innerHTML += `<br><b>[서버 오류: ${eventData.content}]</b>`;
+                                }
+                            } catch (e) {
+                                console.warn("JSON 파싱 오류 무시:", jsonString);
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                responseArea.innerHTML += `<br><b>클라이언트 오류 발생: ${error}</b>`;
+            } finally {
+                document.querySelector('button').disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
