@@ -8,7 +8,7 @@ from typing import Any, Dict, Optional
 
 from config import settings, db_config
 
-# --- Pydantic 모델 정의 ---
+# Pydantic 모델 정의
 class RequestParams(BaseModel):
     query: str
 
@@ -24,7 +24,7 @@ class ErrorDetail(BaseModel):
 class ErrorResponse(BaseModel):
     error: ErrorDetail
 
-# --- FastAPI 앱 생성 ---
+# FastAPI 앱 생성
 app = FastAPI(
     title="MCP DB Server",
     version="1.0.0",
@@ -32,7 +32,7 @@ app = FastAPI(
     swagger_ui_parameters={"docExpansion": "none"}
 )
 
-# --- 데이터베이스 연결 풀 관리 ---
+# 데이터베이스 연결 풀 관리
 # 앱 시작 시 연결 풀 생성, 종료 시 해제 (프로덕션 환경에 권장)
 # 여기서는 간단하게 요청마다 연결/해제
 def get_db_connection():
@@ -46,7 +46,7 @@ def get_db_connection():
         raise HTTPException(status_code=500, detail=f"Database connection failed: {err}")
     return None
 
-# --- API 엔드포인트 ---
+# API 엔드포인트
 @app.post(
     "/mcp",
     summary="Execute DB Query via MCP",
@@ -59,7 +59,7 @@ async def execute_query(request: MCPRequest):
     - **method**: `query_{db_id}` 형식. 현재는 `db_id`를 사용하지 않지만 명세 호환성을 위해 유지.
     - **params**: `query` 필드에 실행할 SQL 쿼리 포함.
     """
-    # 1. 요청 유효성 검사 (메서드 형식)
+    # 요청 유효성 검사 (메서드 형식)
     if not request.method.startswith("query_"):
         return JSONResponse(
             status_code=400,
@@ -73,7 +73,7 @@ async def execute_query(request: MCPRequest):
             content={"error": {"code": -32602, "message": "Query parameter cannot be empty."}}
         )
 
-    # 2. 데이터베이스 연결 및 쿼리 실행
+    # 데이터베이스 연결 및 쿼리 실행
     conn = None
     cursor = None
     try:
@@ -112,7 +112,7 @@ async def execute_query(request: MCPRequest):
 def health_check():
     return {"status": "ok", "message": "MCP DB Server is running."}
 
-# --- 서버 실행 ---
+# 서버 실행
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",

@@ -20,7 +20,7 @@ from G2P2C.Sim_CLI.g2p2c_agent_api import load_agent, infer_action
 from G2P2C.utils.statespace import StateSpace
 
 
-# --- 1. 전역 상태 변수 및 모델 로딩 ---
+# 전역 상태 변수 및 모델 로딩
 
 app_state: Dict[str, Any] = {}
 
@@ -43,24 +43,12 @@ async def lifespan(app: FastAPI):
     app_state.clear()
 
 
-# --- 2. FastAPI 앱 및 Pydantic 모델 정의 ---
+# FastAPI 앱 및 Pydantic 모델 정의
 
 app = FastAPI(
     title="G2P2C Inference Server",
     lifespan=lifespan
 )
-
-# simglucose_input = {
-#     "current_cgm": current_cgm,
-#     "cgm_history": self.cgm_history[-12:],  # 최근 12개
-#     "insulin_history": self.insulin_history[-12:],  # 최근 12개
-#     "smb_history" : self.smb_history[-12:], # 최근 12개
-#     "algorithm_history" : self.algorithm_history[-12:], # 최근 12개
-#     "current_meal" : current_meal,
-#     "patient_state": patient_state,
-#     "patient_name": patient_name,
-#     "timestamp": current_time.isoformat() if hasattr(current_time, 'isoformat') else str(current_time)
-# }
 
 class G2P2CRequest(BaseModel):
     """/predict 엔드포인트의 요청 본문 모델 (클라이언트 형식에 맞게 수정됨)"""
@@ -79,7 +67,7 @@ class InferenceResponse(BaseModel):
     recommended_insulin: float
 
 
-# --- 3. 핵심 추론 로직 (헬퍼 함수) ---
+# 핵심 추론 로직 (헬퍼 함수)
 
 def run_g2p2c_inference(agent: Any, input_data: Dict[str, Any]) -> float:
     state_manager = StateSpace(agent.args)
@@ -102,12 +90,10 @@ def run_g2p2c_inference(agent: Any, input_data: Dict[str, Any]) -> float:
         raise ValueError("timestamp는 반드시 ISO 8601 형식이어야 합니다.")
     
     print("Hi")
-
-    last_handcraft_features = None
     
     # 이력 데이터로 StateSpace를 순차적으로 업데이트
     for i in range(12):
-        # ✅ cgm_history 리스트에서 숫자를 바로 가져와 사용합니다.
+        # cgm_history 리스트에서 숫자를 바로 가져와 사용
         cgm_value = cgm_history[i]
         insulin_value = insulin_history[i]
         
@@ -118,7 +104,6 @@ def run_g2p2c_inference(agent: Any, input_data: Dict[str, Any]) -> float:
 
     print(handcraft_features)
     
-    # (이하 로직은 동일)
     state_hist_processed = state_manager.state
 
     insulin_hourly_rate = infer_action(
@@ -129,7 +114,7 @@ def run_g2p2c_inference(agent: Any, input_data: Dict[str, Any]) -> float:
     final_dose_5min = float(insulin_hourly_rate) / 12.0
     return final_dose_5min
 
-# --- 4. API 엔드포인트 정의 ---
+# API 엔드포인트 정의
 
 @app.post("/predict", response_model=InferenceResponse)
 async def predict(request: G2P2CRequest):
@@ -151,7 +136,7 @@ async def predict(request: G2P2CRequest):
         print(f"추론 중 오류 발생: {e}")
         raise HTTPException(status_code=500, detail="추론 중 서버 내부 오류가 발생했습니다.")
     
-# --- 서버 실행 ---
+# 서버 실행
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",

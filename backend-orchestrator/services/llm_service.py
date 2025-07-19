@@ -7,11 +7,8 @@ from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, System
 from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
 
-# 현재 프로젝트의 다른 모듈 임포트 (상대 경로 수정)
 import sys
-import os
 import json
-
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from tools import query_db_mcp
 from config import config
@@ -124,20 +121,20 @@ async def agent_chat_with_claude(chat_history: List[Dict[str, str]]) -> List[Dic
             elif role == "assistant":
                 messages.append(AIMessage(content=content))
 
-        # ✨ (핵심 수정 1) 입력 메시지의 개수를 미리 저장합니다.
+        # 입력 메시지의 개수를 미리 저장
         input_message_count = len(messages)
 
-        # 2. LangGraph 에이전트 실행
+        # LangGraph 에이전트 실행
         inputs = {"messages": messages}
         result = await app.ainvoke(inputs)
         final_messages = result.get("messages", [])
         
-        # ✨ (핵심 수정 2) 새로 추가된 메시지만 잘라냅니다.
+        # 새로 추가된 메시지만 잘라냄
         newly_added_messages = final_messages[input_message_count:]
 
-        # 3. 새로 추가된 메시지들만 dict 형식으로 변환
+        # 새로 추가된 메시지들만 dict 형식으로 변환
         new_messages_as_dicts = []
-        # ✨ (핵심 수정 3) '새로 추가된 메시지'에 대해서만 루프를 실행합니다.
+        # '새로 추가된 메시지'에 대해서만 루프를 실행
         for msg in newly_added_messages:
             role = "unknown"
             content = ""
@@ -204,27 +201,27 @@ async def agent_chat_with_claude_stream(chat_history: List[Dict[str, str]]):
     async for event in app.astream_events(inputs, version='v2'):
         kind = event["event"]
 
-        # 1. LLM이 생성하는 텍스트/도구 호출 스트리밍
+        # LLM이 생성하는 텍스트/도구 호출 스트리밍
         if kind == "on_chat_model_stream":
-            # Anthropic 모델의 chunk.content는 항상 content block의 리스트입니다.
+            # Anthropic 모델의 chunk.content는 항상 content block의 리스트
             for part in event["data"]["chunk"].content:
-                # 텍스트 블록만 스트리밍합니다. (tool_use는 on_tool_start에서 처리)
+                # 텍스트 블록만 스트리밍 (tool_use는 on_tool_start에서 처리)
                 if part.get("type") == "text" and part.get("text"):
                     yield f"data: {json.dumps({'type': 'text', 'content': part['text']}, ensure_ascii=False)}\n\n"
 
-        # 2. (수정) 도구 호출 시작 시점 포착!
-        # on_chat_model_stream에서 tool_use를 처리하는 대신 on_tool_start를 사용합니다.
+        # 도구 호출 시작 시점 포착!
+        # on_chat_model_stream에서 tool_use를 처리하는 대신 on_tool_start를 사용
         elif kind == "on_tool_start":
             response_json = {
                 "type": "tool_call",
                 "content": {
                     "name": event["name"],
-                    "args": event["data"].get("input") # 이 이벤트에는 모든 인자가 포함되어 있습니다.
+                    "args": event["data"].get("input") # 이 이벤트에는 모든 인자가 포함되어 있음
                 }
             }
             yield f"data: {json.dumps(response_json, ensure_ascii=False)}\n\n"
 
-        # 3. 도구 실행 결과 스트리밍 (수정 없음)
+        # 도구 실행 결과 스트리밍
         elif kind == "on_tool_end":
             response_json = {
                 "type": "tool_result",
@@ -236,7 +233,7 @@ async def agent_chat_with_claude_stream(chat_history: List[Dict[str, str]]):
             yield f"data: {json.dumps(response_json, ensure_ascii=False)}\n\n"
 
 
-# --- 채팅방 제목 생성 및 업데이트 함수 ---
+# 채팅방 제목 생성 및 업데이트 함수
 async def generate_and_update_chat_title(chat_id: int, first_message: str) -> str:
     """
     사용자의 첫 번째 메시지를 바탕으로 채팅방 제목을 생성하고 DB에 업데이트
@@ -273,7 +270,7 @@ async def generate_and_update_chat_title(chat_id: int, first_message: str) -> st
         # 응답에서 제목 추출
         generated_title = response.content.strip()
         
-        # 제목 길이 제한 (DB 제약 고려)
+        # 제목 길이 제한
         if len(generated_title) > 50:
             generated_title = generated_title[:47] + "..."
         
@@ -305,7 +302,7 @@ async def generate_and_update_chat_title(chat_id: int, first_message: str) -> st
         
         return default_title
 
-# --- 테스트용 예제 실행 ---
+# 테스트용 예제 실행
 async def main_test():
     """테스트를 위한 메인 비동기 함수입니다."""
     print("--- LLM 에이전트 서비스 테스트 시작 (Stateless create_react_agent 2025) ---")
@@ -313,7 +310,7 @@ async def main_test():
         print("오류: ANTHROPIC_API_KEY를 찾을 수 없습니다.")
         return
 
-    # 1. 간단한 대화 테스트
+    # 간단한 대화 테스트
     print("\n=== 테스트 1: 간단한 인사 ===")
     chat_1 = [{"role": "user", "content": "안녕하세요! 제 이름은 박현빈입니다.."}]
     print(f"입력: {chat_1}")
@@ -322,7 +319,7 @@ async def main_test():
     print(f"출력: {response_1}")
     print("---------------------------------------")
 
-    # 2. 데이터베이스 조회 테스트
+    # 데이터베이스 조회 테스트
     print("\n=== 테스트 2: 데이터베이스 조회 ===")
     chat_2 = [{"role": "user", "content": "내 최근 혈당 수치를 알려주세요."}]
     print(f"입력: {chat_2}")
@@ -331,7 +328,7 @@ async def main_test():
     print(f"출력: {response_2}")
     print("---------------------------------------")
 
-    # 3. 연속 대화 테스트
+    # 연속 대화 테스트
     print("\n=== 테스트 3: 연속 대화 ===")
     chat_3 = response_2.copy()  # 이전 대화 이어받기
     chat_3.append({"role": "user", "content": "그럼 어제 주입한 인슐린 총량은 얼마인가요?"})
@@ -374,7 +371,7 @@ async def generate_and_update_report_title(report_id: int, report_content: str) 
         if len(generated_title) > 50:
             generated_title = generated_title[:47] + "..."
         
-        # ✨ (핵심 변경) 업데이트할 테이블과 컬럼, ID를 리포트에 맞게 수정
+        # 업데이트할 테이블과 컬럼, ID를 리포트에 맞게 수정
         update_sql = f"""
             UPDATE user_reports 
             SET report_title = '{generated_title.replace("'", "''")}' 
@@ -388,7 +385,7 @@ async def generate_and_update_report_title(report_id: int, report_content: str) 
         
     except Exception as e:
         print(f"WARN: 리포트 제목 생성/업데이트 실패: {e}")
-        # 실패 시 기본 제목은 반환만 하고 DB 업데이트는 하지 않음 (이미 생성된 레코드가 있으므로)
+        # 실패 시 기본 제목은 반환만 하고 DB 업데이트는 하지 않음
         return "주간 혈당 리포트"
     
     
