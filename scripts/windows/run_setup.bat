@@ -64,9 +64,3 @@ echo New virtual environments created
 echo Python packages installed
 echo Ready for this computer
 echo.
-echo Next steps:
-echo   1. Install frontend: cd frontend && npm install
-echo   2. Install algo-oref0: cd algo-oref0\oref0 && npm install
-echo   3. Run project: run_web.bat or run_simulation.bat
-echo.
-pause 
