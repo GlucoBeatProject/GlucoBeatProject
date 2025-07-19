@@ -23,9 +23,6 @@ from fastapi.middleware.cors import CORSMiddleware
 # services/llm_service.py에서 새로운 에이전트 함수 임포트
 from services.llm_service import agent_chat_with_claude, generate_and_update_chat_title, agent_chat_with_claude_stream, generate_and_update_report_title
 
-# oref0 서비스 임포트
-from services.oref0_service import oref0_service
-
 # /dashboard/cgm 응답 모델
 class CgmDayData(BaseModel):
     time: str  # "HH:MM" 형식
