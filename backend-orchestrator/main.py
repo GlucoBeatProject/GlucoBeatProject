@@ -290,7 +290,7 @@ async def get_insulin_history(start_date: date, end_date: date = date.today()):
                     DATE(time) as query_date,
                     AVG(insulin_amount) as insulin_mean,
                     algorithm,
-                    JSON_ARRAYAGG(JSON_OBJECT('time', TIME_FORMAT(time, '%H:%i'), 'insulin', insulin_amount)) as insulin_day
+                    JSON_ARRAYAGG(JSON_OBJECT('time', TIME_FORMAT(time, '%H:%i'), 'insulin', insulin_amount, 'algorithm', algorithm)) as insulin_day
                 FROM insulin_records 
                 WHERE DATE(time) = '{start_date}'
                 GROUP BY DATE(time), algorithm
