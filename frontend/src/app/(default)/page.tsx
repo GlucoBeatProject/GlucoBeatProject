@@ -55,13 +55,19 @@ export default async function Home() {
             {initCgmData.length > 0 ? (
               <div className="flex flex-col gap-2 items-center w-fit h-full justify-center">
                 <p className="text-4xl sm:text-5xl font-bold text-primary">
-                  {initCgmData[0].cgm_day.at(-1).cgm.toFixed(2)}{' '}
+                  {initCgmData[initCgmData.length - 1].cgm_day
+                    .at(-1)
+                    .cgm.toFixed(2)}{' '}
                   <span className="text-xs text-gray-400 md:text-sm">
                     mg/dL
                   </span>
                 </p>
                 <p className="text-xs text-gray-500 md:text-sm">
-                  {initCgmData[0].cgm_day.at(-1).time}, G2P2C
+                  {initCgmData[initCgmData.length - 1].cgm_day.at(-1).time},{' '}
+                  {
+                    initInsulinData[initInsulinData.length - 1].insulin_day[0]
+                      .algorithm
+                  }
                 </p>
               </div>
             ) : (
