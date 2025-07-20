@@ -152,7 +152,7 @@ erDiagram
     
     users ||--o{ user_reports : "generates"
     users ||--o{ diagnosis : "receives"
-    users ||--o{ cgm_records : "has"
+    users ||--o{ cgm_records : "records"
     users ||--o{ chat_rooms : "creates"
     users ||--o{ insulin_records : "records"
     chat_rooms ||--o{ chat_messages : "contains"
@@ -162,7 +162,7 @@ erDiagram
 
 - **users**: 사용자 기본 정보
 - **user_reports**: 사용자 생성 리포트
-- **diagnosis**: AI 진단 내역
+- **diagnosis**: 진단 내역
 - **cgm_records**: 혈당 측정 기록
 - **chat_rooms**: 채팅방 정보
 - **insulin_records**: 인슐린 투여 기록
