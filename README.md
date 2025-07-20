@@ -236,6 +236,9 @@ erDiagram
 ```bash
 cd scripts/windows
 ./run_simulation.bat
+# 1번 입력: 식사 입력 없는 랜덤 시나리오
+# 2번 입력: 식사 입력 있는 커스텀 시나리오
+# 마지막에 띄워지는 Simglucose 터미널에서 1번, 2번 중 선택
 ```
 
 #### Web 프로젝트
@@ -280,9 +283,13 @@ python main.py
 cd simglucose/simglucose
 # 기본 설정으로 실행
 python run_simulation_programmatic.py
+# 1번 입력: 식사 입력 없는 랜덤 시나리오
+# 2번 입력: 식사 입력 있는 커스텀 시나리오
+# 마지막에 띄워지는 Simglucose 터미널에서 1번, 2번 중 선택
 
 # 또는 커스텀 설정으로 실행
 python run_simulation.py
+# 터미널에 주어지는 질문들을 통해 커스텀 설정 가능
 ```
 
 #### 2. Web 프로젝트 실행
