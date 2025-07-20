@@ -14,10 +14,34 @@ SW융합대학 디지털 경진대회 최종 출품작
 ## 시스템 요구사항
 
 ### 필수 프로그램 (Windows, Mac, Linux)
-- **Git** (버전 관리)
+- **Git** 
 - **Python 3.10.11**
 - **Python 3.12.10** 
 - **Node.js 22.14.0**
+
+### 환경변수 설정 확인
+
+프로그램 설치 후 터미널/명령 프롬프트에서 다음 명령어로 정상 설치를 확인해주세요:
+
+```bash
+# 버전 확인
+git --version
+
+# Python 버전 확인 (Windows)
+py -3.10 --version
+py -3.12 --version
+
+# Python 버전 확인 (Mac/Linux)
+python3.10 --version  # 또는 python3 --version
+python3.12 --version
+
+# Node.js 확인
+node --version
+npm --version
+```
+
+**주의사항**: 
+- 설치 시 "Add to PATH" 옵션을 체크하거나, 수동으로 환경변수 PATH에 추가해야 합니다.
 
 ## 프로젝트 다운로드
 
