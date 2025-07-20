@@ -94,29 +94,6 @@ class DiagnosisDetail(BaseModel):
     created_at: datetime
     dia_llm_message: str # llm이 생성한 진단 내용 전체
 
-# oref0 API 요청/응답 모델
-class Oref0Request(BaseModel):
-    current_cgm: float
-    cgm_history: Optional[List[Dict]] = []
-    insulin_history: Optional[List[Dict]] = []
-    carbs: Optional[float] = 0
-    cob: Optional[float] = 0
-    profile: Optional[Dict] = None
-    patient_name: Optional[str] = "default"
-
-class Oref0Response(BaseModel):
-    recommended_insulin: float
-    basal_rate: float
-    target_bg: float
-    current_bg: float
-    eventual_bg: float
-    iob: float
-    bgi: float
-    deviation: float
-    smb_enabled: bool
-    reason: str
-    timestamp: str
-
 app = FastAPI(
     title="Orchestration Hub & Frontend API",
     version="1.0.0",
@@ -197,37 +174,6 @@ async def calculate_decision(request: Request):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
-@app.post("/oref0/calculate", response_model=Oref0Response, tags=["oref0"])
-async def calculate_oref0_decision(request: Oref0Request):
-    """oref0 알고리즘을 사용하여 인슐린 투여 결정을 계산합니다."""
-    try:
-        
-        # simglucose 형식으로 데이터 변환
-        simglucose_data = {
-            "current_cgm": request.current_cgm,
-            "cgm_history": request.cgm_history,
-            "insulin_history": request.insulin_history,
-            "carbs": request.carbs,
-            "cob": request.cob,
-            "profile": request.profile,
-            "patient_name": request.patient_name
-        }
-        
-        # oref0 서비스로 결정 계산
-        result = oref0_service.process_simglucose_request(simglucose_data)
-        
-        print(f"Oref0: Decision calculated")
-        print(f"   Recommended insulin: {result.get('recommended_insulin', 0)} units")
-        print(f"   SMB enabled: {result.get('smb_enabled', False)}")
-        
-        return Oref0Response(**result)
-        
-    except Exception as e:
-        print(f"Oref0: Error calculating decision: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Oref0 calculation error: {str(e)}")
-
 @app.get("/dashboard/cgm", response_model=List[CgmData], tags=["대시보드"])
 async def get_cgm_history(start_date: date, end_date: date = date.today()):
     """혈당 이력 조회 API - MCP를 통해 데이터베이스에서 조회"""
@@ -289,11 +235,10 @@ async def get_insulin_history(start_date: date, end_date: date = date.today()):
                 SELECT 
                     DATE(time) as query_date,
                     AVG(insulin_amount) as insulin_mean,
-                    algorithm,
                     JSON_ARRAYAGG(JSON_OBJECT('time', TIME_FORMAT(time, '%H:%i'), 'insulin', insulin_amount, 'algorithm', algorithm)) as insulin_day
                 FROM insulin_records 
                 WHERE DATE(time) = '{start_date}'
-                GROUP BY DATE(time), algorithm
+                GROUP BY DATE(time)
             """
         else:
             # 여러 날짜의 평균 데이터 조회
