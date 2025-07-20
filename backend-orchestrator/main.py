@@ -812,28 +812,43 @@ async def create_report_and_ask_question():
     #     "html 태그 제외한 부분에 '<','>' 쓰지 말아주세요. "
     #     "출력 형식은 반드시 React 컴포넌트(JSX)여야 해야해요. "
     # )
-    report_generation_prompt = """You are tasked with creating a weekly blood glucose report for a user. The report should be visually appealing and easy to understand, allowing the user to quickly grasp their health status. 
+    report_generation_prompt = """You are a React component generator. Your task is to create a weekly blood glucose report as a single, self-contained React component.
 
-Your goal is to analyze this data and create a weekly report as a React component (JSX). Follow these steps:
+You MUST follow these strict rules:
 
-1. Analyze the blood glucose data for trends, patterns, and notable events (highs, lows, stable periods).
+1.  **Component Name**: The component function **MUST be named `WeeklyGlucoseReport`**. This is a strict requirement.
+    - Correct: `function WeeklyGlucoseReport() { ... }`
+    - Incorrect: `function WeeklyReport() { ... }`, `const GlucoseReport = () => { ... }`
 
-2. Create a React component that includes:
-   - A title for the report
-   - A summary of the week's blood glucose trends
-   - Visual representations of the data (e.g., charts, graphs)
-   - Key statistics (e.g., average glucose level, number of highs/lows)
+2.  **Dependencies**:
+    - You **MUST** use the `Recharts` library for any data visualization.
+    - All necessary components from `React` and `Recharts` (e.g., `LineChart`, `BarChart`, `XAxis`, `YAxis`, `Tooltip`, `Legend`, `ResponsiveContainer`) are already available in the execution scope.
+    - Therefore, you **MUST NOT** write any `import` statements.
 
-3. Use appropriate React libraries for data visualization (e.g., recharts, react-chartjs-2).
+3.  **Output Format**:
+    - Your entire output **MUST BE ONLY the raw JSX code** for the component.
+    - **DO NOT** include `export default WeeklyGlucoseReport;`.
+    - **DO NOT** wrap your code in Markdown fences like ```jsx ... ```.
+    - **DO NOT** add any text or explanation before or after the code.
 
-4. Ensure the component is well-structured and follows React best practices.
+Here is an example structure to follow:
 
-Important formatting rules:
-- The output must be a valid React component (JSX).
-- Do not use '<' or '>' characters outside of HTML tags or component names.
-- Ensure all brackets, parentheses, and braces are properly closed and matched.
+function WeeklyGlucoseReport() {
+  const weeklyData = [
+    // ... data ...
+  ];
 
-Remember, the goal is to create a visually appealing and informative weekly report that helps the user understand their blood glucose trends at a glance."""
+  return (
+    <div style={{ fontFamily: 'sans-serif', padding: '20px' }}>
+      <h1 style={{ textAlign: 'center' }}>Weekly Glucose Report</h1>
+      <p>Here is a summary of your blood glucose levels for the past week...</p>
+      
+      {/* Recharts component MUST be used here */}
+
+    </div>
+  );
+}
+"""
     
     chat_history_for_report = [{"role": "user", "content": report_generation_prompt}]
 
