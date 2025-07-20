@@ -4,6 +4,7 @@ SW융합대학 디지털 경진대회 최종 출품작
 
 ## 목차
 - [시스템 요구사항](#시스템-요구사항)
+- [프로젝트 다운로드](#프로젝트-다운로드)
 - [패키지 설치](#패키지-설치)
 - [Python 가상환경 설정](#python-가상환경-설정)
 - [환경 변수 설정](#환경-변수-설정)
@@ -13,9 +14,44 @@ SW융합대학 디지털 경진대회 최종 출품작
 ## 시스템 요구사항
 
 ### 필수 프로그램 (Windows, Mac, Linux)
+- **Git** (버전 관리)
 - **Python 3.10.11**
 - **Python 3.12.10** 
 - **Node.js 22.14.0**
+
+## 프로젝트 다운로드
+
+### Git 설치
+
+**Windows:**
+- [Git for Windows](https://git-scm.com/download/win) 다운로드 및 설치
+
+**Mac:**
+```bash
+# Homebrew가 설치되어 있다면
+brew install git
+
+# 또는 Xcode Command Line Tools
+xcode-select --install
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt update
+sudo apt install git
+```
+
+**Linux (CentOS/RHEL):**
+```bash
+sudo yum install git
+```
+
+### 프로젝트 클론
+
+```bash
+git clone https://github.com/GlucoBeatProject/GlucoBeatProject.git
+cd GlucoBeatProject
+```
 
 ## 패키지 설치
 
