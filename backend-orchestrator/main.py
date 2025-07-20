@@ -806,12 +806,35 @@ async def create_report_and_ask_question():
         raise HTTPException(status_code=500, detail=f"DB에 리포트 레코드 생성 실패: {e}")
 
     # LLM을 이용한 리포트 내용 생성
-    report_generation_prompt = (
-        "오늘로부터 일주일 간의 혈당 데이터를 분석해서, 사용자가 자신의 건강 상태를 "
-        "한눈에 파악할 수 있는 주간 리포트를 작성해주세요. "
-        "html 태그 제외한 부분에 '<','>' 쓰지 말아주세요. "
-        "출력 형식은 반드시 React 컴포넌트(JSX)여야 해야해요. "
-    )
+    # report_generation_prompt = (
+    #     "오늘로부터 일주일 간의 혈당 데이터를 분석해서, 사용자가 자신의 건강 상태를 "
+    #     "한눈에 파악할 수 있는 주간 리포트를 작성해주세요. "
+    #     "html 태그 제외한 부분에 '<','>' 쓰지 말아주세요. "
+    #     "출력 형식은 반드시 React 컴포넌트(JSX)여야 해야해요. "
+    # )
+    report_generation_prompt = """You are tasked with creating a weekly blood glucose report for a user. The report should be visually appealing and easy to understand, allowing the user to quickly grasp their health status. 
+
+Your goal is to analyze this data and create a weekly report as a React component (JSX). Follow these steps:
+
+1. Analyze the blood glucose data for trends, patterns, and notable events (highs, lows, stable periods).
+
+2. Create a React component that includes:
+   - A title for the report
+   - A summary of the week's blood glucose trends
+   - Visual representations of the data (e.g., charts, graphs)
+   - Key statistics (e.g., average glucose level, number of highs/lows)
+
+3. Use appropriate React libraries for data visualization (e.g., recharts, react-chartjs-2).
+
+4. Ensure the component is well-structured and follows React best practices.
+
+Important formatting rules:
+- The output must be a valid React component (JSX).
+- Do not use '<' or '>' characters outside of HTML tags or component names.
+- Ensure all brackets, parentheses, and braces are properly closed and matched.
+
+Remember, the goal is to create a visually appealing and informative weekly report that helps the user understand their blood glucose trends at a glance."""
+    
     chat_history_for_report = [{"role": "user", "content": report_generation_prompt}]
 
     try:
