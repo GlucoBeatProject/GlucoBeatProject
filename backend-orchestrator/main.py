@@ -828,7 +828,7 @@ async def create_report_and_ask_question():
     - 따라서, 당신의 응답은 이 패턴에 **완벽하게 일치하는 단일 문자열**이어야만 합니다.
     - 코드 블록 앞뒤로 어떠한 설명이나 추가 텍스트도 절대 포함해서는 안 됩니다.
 
-아래는 위 규칙을 모두 만족하는 완벽한 출력 예시입니다. 이 형식과 정확히 일치하게 생성해야 합니다.
+아래는 위 규칙을 모두 만족하는 완벽한 출력 예시입니다. 
 
 ```jsx
 function WeeklyGlucoseReport() {
@@ -852,6 +852,9 @@ function WeeklyGlucoseReport() {
     </div>
   );
 }
+```
+
+이러한 점을 참고하여, 풍부하고 자세한, 시각화된 리포트를 작성해 주세요. 
 """
     
     chat_history_for_report = [{"role": "user", "content": report_generation_prompt}]
