@@ -816,35 +816,39 @@ async def create_report_and_ask_question():
 
 당신은 아래의 엄격한 규칙을 **반드시** 따라야 합니다:
 
-1.  **컴포넌트 이름**: 컴포넌트 함수의 이름은 **반드시 `WeeklyGlucoseReport`**여야 합니다. 이것은 엄격한 요구사항입니다.
-    - 올바른 예: `function WeeklyGlucoseReport() { ... }`
-    - 잘못된 예: `function WeeklyReport() { ... }`, `const GlucoseReport = () => { ... }`
+1.  **컴포넌트 이름**: 컴포넌트 함수의 이름은 **반드시 `WeeklyGlucoseReport`**여야 합니다.
+    - 예시: `function WeeklyGlucoseReport() { ... }`
 
 2.  **의존성**:
     - 데이터 시각화에는 **반드시 `Recharts` 라이브러리**를 사용해야 합니다.
-    - `React`와 `Recharts`의 모든 필수 컴포넌트(예: `LineChart`, `BarChart`, `XAxis`, `YAxis`, `Tooltip`, `Legend`, `ResponsiveContainer`)는 이미 실행 스코프(scope)에 포함되어 있습니다.
-    - 따라서, **절대 `import` 구문을 작성해서는 안 됩니다**.
+    - `import` 구문을 **절대 작성해서는 안 됩니다**.
 
-3.  **출력 형식**:
-    - 당신의 전체 출력은 컴포넌트에 대한 **순수 JSX 코드**여야만 합니다.
-    - `export default WeeklyGlucoseReport;`를 **포함하지 마세요**.
-    - 코드를 ```jsx ... ```와 같은 마크다운 펜스(Markdown fences)로 **감싸지 마세요**.
-    - 코드 앞이나 뒤에 어떤 텍스트나 설명도 **덧붙이지 마세요**.
+3.  **출력 형식 (매우 중요)**:
+    - 생성된 결과물은 프론트엔드에서 다음 **정규표현식(Regular Expression)으로 파싱(parsing)**됩니다: `/```jsx\n([\s\S]*?)\n?```/`
+    - 따라서, 당신의 응답은 이 패턴에 **완벽하게 일치하는 단일 문자열**이어야만 합니다.
+    - 코드 블록 앞뒤로 어떠한 설명이나 추가 텍스트도 절대 포함해서는 안 됩니다.
 
-아래는 따라야 할 예시 구조입니다:
+아래는 위 규칙을 모두 만족하는 완벽한 출력 예시입니다. 이 형식과 정확히 일치하게 생성해야 합니다.
 
+```jsx
 function WeeklyGlucoseReport() {
   const weeklyData = [
-    // ... 데이터 ...
+    { day: '월', value: 110 },
+    { day: '화', value: 130 },
+    { day: '수', value: 120 },
+    { day: '목', value: 150 },
+    { day: '금', value: 140 },
+    { day: '토', value: 95 },
+    { day: '일', value: 105 },
   ];
 
   return (
-    <div style={{ fontFamily: 'sans-serif', padding: '20px' }}>
-      <h1 style={{ textAlign: 'center' }}>주간 혈당 리포트</h1>
-      <p>지난 주 혈당 수치에 대한 요약입니다...</p>
-      
-      {/* 여기에는 반드시 Recharts 컴포넌트가 사용되어야 합니다 */}
-
+    <div style={{ fontFamily: 'sans-serif', padding: '20px', border: '1px solid #eee', borderRadius: '8px' }}>
+      <h1 style={{ textAlign: 'center', color: '#333' }}>주간 혈당 리포트</h1>
+      <p style={{ textAlign: 'center', color: '#666' }}>지난 주 혈당 수치에 대한 요약입니다.</p>
+      <div style={{ width: '100%', height: 300, marginTop: '20px' }}>
+        <p>차트가 여기에 렌더링 됩니다.</p>
+      </div>
     </div>
   );
 }
