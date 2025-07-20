@@ -7,9 +7,9 @@ export default function DefaultLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="pb-[96px] pt-[60px]">
+    <div className="pb-[110px] pt-[60px]">
       <SimpleHeader />
-      <div className="px-4">{children}</div>
+      <div className="px-4 lg:max-w-[1200px] mx-auto">{children}</div>
       <BottomNav />
     </div>
   );

@@ -198,7 +198,7 @@ function ChatBox({ chat_id, initialData, initMsg }: Props) {
 
   return (
     <>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 min-h-[calc(100dvh-192px)]">
         {data.length > 0 &&
           data.map((data: any) => {
             switch (data.who) {

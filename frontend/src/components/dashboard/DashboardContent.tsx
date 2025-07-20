@@ -32,7 +32,9 @@ function DashboardContent({ initCgmData, initInsulinData }: Props) {
     {
       date: string;
       insulin_mean: number;
-      insulin_day: { time: string; insulin: number }[] | undefined;
+      insulin_day:
+        | { time: string; insulin: number; algorithm: string }[]
+        | undefined;
     }[]
   >(initInsulinData);
 

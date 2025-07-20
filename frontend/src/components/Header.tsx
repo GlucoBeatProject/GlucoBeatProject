@@ -43,7 +43,6 @@ import { IoChatbubbleEllipsesOutline } from 'react-icons/io5';
 import { IoBarChart } from 'react-icons/io5';
 import { Button } from './ui/button';
 import Image from 'next/image';
-import dummyImg from '../../public/dummy_profile.jpg';
 import { IoEllipsisHorizontalSharp } from 'react-icons/io5';
 import { SidebarTrigger } from './ui/sidebar';
 
@@ -88,7 +87,7 @@ function Header({ type = 'default', chatData }: Props) {
   };
 
   return (
-    <header className="flex sticky top-0">
+    <header className="flex sticky top-0 bg-white">
       <div
         className={`h-[60px] w-full px-4 flex gap-1 items-center bg-white border-b border-gray-200 z-50 `}
       >
