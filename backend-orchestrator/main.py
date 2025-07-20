@@ -812,38 +812,38 @@ async def create_report_and_ask_question():
     #     "html 태그 제외한 부분에 '<','>' 쓰지 말아주세요. "
     #     "출력 형식은 반드시 React 컴포넌트(JSX)여야 해야해요. "
     # )
-    report_generation_prompt = """You are a React component generator. Your task is to create a weekly blood glucose report as a single, self-contained React component.
+    report_generation_prompt = """당신이 해야 하는 작업은 '리포트 생성(시각화 도구를 사용하여 리포트 생성)' 입니다.
 
-You MUST follow these strict rules:
+당신은 아래의 엄격한 규칙을 **반드시** 따라야 합니다:
 
-1.  **Component Name**: The component function **MUST be named `WeeklyGlucoseReport`**. This is a strict requirement.
-    - Correct: `function WeeklyGlucoseReport() { ... }`
-    - Incorrect: `function WeeklyReport() { ... }`, `const GlucoseReport = () => { ... }`
+1.  **컴포넌트 이름**: 컴포넌트 함수의 이름은 **반드시 `WeeklyGlucoseReport`**여야 합니다. 이것은 엄격한 요구사항입니다.
+    - 올바른 예: `function WeeklyGlucoseReport() { ... }`
+    - 잘못된 예: `function WeeklyReport() { ... }`, `const GlucoseReport = () => { ... }`
 
-2.  **Dependencies**:
-    - You **MUST** use the `Recharts` library for any data visualization.
-    - All necessary components from `React` and `Recharts` (e.g., `LineChart`, `BarChart`, `XAxis`, `YAxis`, `Tooltip`, `Legend`, `ResponsiveContainer`) are already available in the execution scope.
-    - Therefore, you **MUST NOT** write any `import` statements.
+2.  **의존성**:
+    - 데이터 시각화에는 **반드시 `Recharts` 라이브러리**를 사용해야 합니다.
+    - `React`와 `Recharts`의 모든 필수 컴포넌트(예: `LineChart`, `BarChart`, `XAxis`, `YAxis`, `Tooltip`, `Legend`, `ResponsiveContainer`)는 이미 실행 스코프(scope)에 포함되어 있습니다.
+    - 따라서, **절대 `import` 구문을 작성해서는 안 됩니다**.
 
-3.  **Output Format**:
-    - Your entire output **MUST BE ONLY the raw JSX code** for the component.
-    - **DO NOT** include `export default WeeklyGlucoseReport;`.
-    - **DO NOT** wrap your code in Markdown fences like ```jsx ... ```.
-    - **DO NOT** add any text or explanation before or after the code.
+3.  **출력 형식**:
+    - 당신의 전체 출력은 컴포넌트에 대한 **순수 JSX 코드**여야만 합니다.
+    - `export default WeeklyGlucoseReport;`를 **포함하지 마세요**.
+    - 코드를 ```jsx ... ```와 같은 마크다운 펜스(Markdown fences)로 **감싸지 마세요**.
+    - 코드 앞이나 뒤에 어떤 텍스트나 설명도 **덧붙이지 마세요**.
 
-Here is an example structure to follow:
+아래는 따라야 할 예시 구조입니다:
 
 function WeeklyGlucoseReport() {
   const weeklyData = [
-    // ... data ...
+    // ... 데이터 ...
   ];
 
   return (
     <div style={{ fontFamily: 'sans-serif', padding: '20px' }}>
-      <h1 style={{ textAlign: 'center' }}>Weekly Glucose Report</h1>
-      <p>Here is a summary of your blood glucose levels for the past week...</p>
+      <h1 style={{ textAlign: 'center' }}>주간 혈당 리포트</h1>
+      <p>지난 주 혈당 수치에 대한 요약입니다...</p>
       
-      {/* Recharts component MUST be used here */}
+      {/* 여기에는 반드시 Recharts 컴포넌트가 사용되어야 합니다 */}
 
     </div>
   );
