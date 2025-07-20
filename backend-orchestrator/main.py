@@ -62,7 +62,7 @@ class ChatDetailsResponse(BaseModel):
     messages: List[Message]
 
 # /chat/{chat_id}/message 요청 모델
-class NewMessage(BaseModel): #! 수정 필요 - role 추가, 이 role은 User 아니면 AI.
+class NewMessage(BaseModel):
     msg: str
 
 # /reports API의 각 항목에 대한 모델
