@@ -147,7 +147,7 @@ def run_simulation_with_config(config, scenario_type='random', meals=None):
         # 시뮬레이션 실행
         print("Starting simulation...")
         
-        results = simulate(
+        simulate(
             sim_time=config['sim_time'],
             scenario=scenario,
             controller=controller,
