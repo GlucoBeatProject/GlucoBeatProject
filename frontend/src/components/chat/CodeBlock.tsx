@@ -4,9 +4,16 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import { CSSProperties } from 'react';
 
 interface Props {
   content: string;
+}
+
+interface CodeBlockProps {
+  className?: string;
+  children?: React.ReactNode;
+  [key: string]: any; // 그 외 다른 props를 받을 수 있도록 설정
 }
 
 export function CodeBlock({ content }: Props) {
@@ -14,11 +21,11 @@ export function CodeBlock({ content }: Props) {
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
-        code({ node, className, children, ...props }) {
+        code({ node, className, style, children, ...props }) {
           return (
             <SyntaxHighlighter
-              style={vscDarkPlus} // 하이라이팅 테마
-              language="sql" // 👈 언어를 'sql'로 고정
+              style={vscDarkPlus as any}
+              language="sql"
               PreTag="div"
               {...props}
             >

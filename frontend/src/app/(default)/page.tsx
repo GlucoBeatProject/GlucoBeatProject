@@ -1,60 +1,33 @@
-import Link from 'next/link';
 import DashboardContent from '@/components/dashboard/DashboardContent';
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { parseISO, format } from 'date-fns';
+import { format } from 'date-fns';
 import { CGM_MAX, CGM_MIN } from '@/const/cgm';
+import DiaSection from './_components/DiaSection';
+import ReportSection from './_components/ReportSection';
 
 export default async function Home() {
-  const today = new Date();
+  // const today = new Date();
+  const today = '2025-07-21';
+  const formatedDay = format(today, 'yyyy-MM-dd');
 
-  const initCgmData = await (
-    await fetch(
-      `http://127.0.0.1:4000/dashboard/cgm?start_date=${format(
-        today,
-        'yyyy-MM-dd'
-      )}&end_date=${format(today, 'yyyy-MM-dd')}`
-    )
-  ).json();
+  const [initCgmData, initInsulinData] = await Promise.all([
+    fetch(
+      `http://127.0.0.1:4000/dashboard/cgm?start_date=${formatedDay}&end_date=${formatedDay}`
+    ).then((res) => res.json()),
+    fetch(
+      `http://127.0.0.1:4000/dashboard/insulin?start_date=${formatedDay}&end_date=${formatedDay}`
+    ).then((res) => res.json()),
+  ]);
 
-  const initInsulinData = await (
-    await fetch(
-      `http://127.0.0.1:4000/dashboard/insulin?start_date=${format(
-        today,
-        'yyyy-MM-dd'
-      )}&end_date=${format(today, 'yyyy-MM-dd')}`
-    )
-  ).json();
-
-  const recentDia = await (
-    await fetch(`http://127.0.0.1:4000/diagnosis?user_id=1`)
-  )
-    .json()
-    .then(
-      async (data) =>
-        await (
-          await fetch(`http://127.0.0.1:4000/diagnosis/${data[0].dia_id}`)
-        ).json()
-    );
-
-  const recentReport = await (
-    await fetch(`http://127.0.0.1:4000/reports?user_id=1`)
-  )
-    .json()
-    .then(async (data) =>
-      data.length > 0
-        ? await (
-            await fetch(`http://127.0.0.1:4000/reports/${data[0].report_id}`)
-          ).json()
-        : null
-    );
+  const recentCgm = initCgmData[initCgmData.length - 1]?.cgm_day.at(-1).cgm;
+  const isDangerState = recentCgm > CGM_MAX || recentCgm < CGM_MIN;
 
   return (
     <main className="mt-4 lg:mt-6 flex flex-col gap-6">
@@ -68,19 +41,9 @@ export default async function Home() {
                 오늘 기록된 가장 최근 혈당입니다.
               </CardDescription>
               {initCgmData[initCgmData.length - 1] ? (
-                initCgmData[initCgmData.length - 1].cgm_day
-                  .at(-1)
-                  .cgm.toFixed(0) > CGM_MAX ||
-                initCgmData[initCgmData.length - 1].cgm_day
-                  .at(-1)
-                  .cgm.toFixed(0) < CGM_MIN ? (
+                isDangerState ? (
                   <div className="py-3 px-4 rounded-md bg-primary/15 text-primary font-bold">
-                    ⚠️ 현재{' '}
-                    {initCgmData[initCgmData.length - 1].cgm_day
-                      .at(-1)
-                      .cgm.toFixed(0) > CGM_MAX
-                      ? '고'
-                      : '저'}
+                    ⚠️ 현재 {recentCgm > CGM_MAX ? '고' : '저'}
                     혈당 상태입니다.
                   </div>
                 ) : null
@@ -91,19 +54,10 @@ export default async function Home() {
                 <div className="flex flex-col gap-2 items-center w-fit h-full justify-center">
                   <p
                     className={`text-4xl sm:text-5xl font-bold ${
-                      initCgmData[initCgmData.length - 1].cgm_day
-                        .at(-1)
-                        .cgm.toFixed(0) > CGM_MAX ||
-                      initCgmData[initCgmData.length - 1].cgm_day
-                        .at(-1)
-                        .cgm.toFixed(0) < CGM_MIN
-                        ? 'text-primary'
-                        : 'text-green-600'
+                      isDangerState ? 'text-primary' : 'text-green-600'
                     }`}
                   >
-                    {initCgmData[initCgmData.length - 1].cgm_day
-                      .at(-1)
-                      .cgm.toFixed(2)}{' '}
+                    {recentCgm.toFixed(2)}{' '}
                     <span className="text-xs text-gray-400 md:text-sm">
                       mg/dL
                     </span>
@@ -197,52 +151,8 @@ export default async function Home() {
 
       <section className="flex flex-col gap-4">
         <h3 className="font-bold">GlucoBeat와 건강 관리하기</h3>
-        <Card>
-          <CardHeader>
-            <CardTitle>최근 의사의 진단</CardTitle>
-            <CardDescription>
-              {format(parseISO(recentDia?.created_at), 'yyyy년 M월 d일 HH:mm')}
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="leading-relaxed text-gray-800 whitespace-pre-line">
-            {recentDia?.dia_message || '최근 진단 내역이 존재하지 않습니다.'}
-          </CardContent>
-
-          <CardFooter>
-            <Link
-              href={`/diagnosis/${recentDia?.dia_id}`}
-              className="text-sm text-primary hover:underline flex justify-end w-full"
-            >
-              본문 보러가기
-            </Link>
-          </CardFooter>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>최근 심층 분석 리포트</CardTitle>
-            <CardDescription>
-              {format(
-                parseISO(recentReport?.created_at),
-                'yyyy년 M월 d일 HH:mm'
-              )}
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="text-gray-800 text-[20px] font-bold">
-            {recentReport?.report_title ||
-              '최근 생성된 리포트가 존재하지 않습니다.'}
-          </CardContent>
-
-          <CardFooter>
-            <Link
-              href={`/report/${recentReport?.report_id}`}
-              className="text-sm text-primary hover:underline flex justify-end w-full"
-            >
-              리포트 보러가기
-            </Link>
-          </CardFooter>
-        </Card>
+        <DiaSection />
+        <ReportSection />
       </section>
     </main>
   );
