@@ -40,7 +40,14 @@ function SimpleHeader() {
           className="flex gap-2 items-center font-bold hover:cursor-pointer"
         >
           <div className="w-10 h-10 relative">
-            <Image src={logoImg} alt="GlucoBeat" fill />
+            <Image
+              src={logoImg}
+              alt="GlucoBeat"
+              fill
+              sizes="40"
+              priority
+              className="aboslute"
+            />
           </div>
           <span className="sm:hidden">GlucoBeat</span>
         </button>
@@ -55,10 +62,18 @@ function SimpleHeader() {
           <Button variant={'ghost'}>
             <Link href={'/diagnosis'}>나의 진단 내역</Link>
           </Button>
-          <button className="relative w-10 h-10 cursor-pointer flex items-center justify-center rounded-full border-2 border-gluco-main overflow-hidden">
-            <Link href={'/404'}>
-              <Image src={dummyImg} alt="프로필 이미지" fill />
-            </Link>
+          <button
+            onClick={() => (window.location.href = '/404')}
+            className="relative w-10 h-10 cursor-pointer flex items-center justify-center rounded-full border-2 border-gluco-main overflow-hidden"
+          >
+            <Image
+              src={dummyImg}
+              alt="프로필 이미지"
+              fill
+              sizes="36"
+              priority
+              className="aboslute"
+            />
           </button>
         </div>
       </header>
