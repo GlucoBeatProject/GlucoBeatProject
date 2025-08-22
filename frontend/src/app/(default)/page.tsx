@@ -67,21 +67,23 @@ export default async function Home() {
               <CardDescription>
                 오늘 기록된 가장 최근 혈당입니다.
               </CardDescription>
-              {initCgmData[initCgmData.length - 1].cgm_day
-                .at(-1)
-                .cgm.toFixed(0) > CGM_MAX ||
-              initCgmData[initCgmData.length - 1].cgm_day
-                .at(-1)
-                .cgm.toFixed(0) < CGM_MIN ? (
-                <div className="py-3 px-4 rounded-md bg-primary/15 text-primary font-bold">
-                  ⚠️ 현재{' '}
-                  {initCgmData[initCgmData.length - 1].cgm_day
-                    .at(-1)
-                    .cgm.toFixed(0) > CGM_MAX
-                    ? '고'
-                    : '저'}
-                  혈당 상태입니다.
-                </div>
+              {initCgmData[initCgmData.length - 1] ? (
+                initCgmData[initCgmData.length - 1].cgm_day
+                  .at(-1)
+                  .cgm.toFixed(0) > CGM_MAX ||
+                initCgmData[initCgmData.length - 1].cgm_day
+                  .at(-1)
+                  .cgm.toFixed(0) < CGM_MIN ? (
+                  <div className="py-3 px-4 rounded-md bg-primary/15 text-primary font-bold">
+                    ⚠️ 현재{' '}
+                    {initCgmData[initCgmData.length - 1].cgm_day
+                      .at(-1)
+                      .cgm.toFixed(0) > CGM_MAX
+                      ? '고'
+                      : '저'}
+                    혈당 상태입니다.
+                  </div>
+                ) : null
               ) : null}
             </CardHeader>
             <CardContent className="mx-auto">
