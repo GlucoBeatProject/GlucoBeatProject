@@ -1,4 +1,3 @@
-import DashboardContent from '@/components/dashboard/DashboardContent';
 import {
   Card,
   CardContent,
@@ -9,20 +8,30 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { format } from 'date-fns';
 import { CGM_MAX, CGM_MIN } from '@/const/cgm';
-import DiaSection from './_components/DiaSection';
-import ReportSection from './_components/ReportSection';
+import { Suspense } from 'react';
+import dynamic from 'next/dynamic';
+
+const DashboardContent = dynamic(
+  () => import('@/components/dashboard/DashboardContent')
+);
+const DiaSection = dynamic(() => import('./_components/DiaSection'));
+const ReportSection = dynamic(() => import('./_components/ReportSection'));
 
 export default async function Home() {
   // const today = new Date();
   const today = '2025-07-21';
   const formatedDay = format(today, 'yyyy-MM-dd');
 
+  //해당 데이터 전체는 DashboardContent용
+  //내 상태 확인 section에서는 최신 데이터만 필요하므로 최신 데이터 get API가 추가되는 것이 가장 효율적인 최적화 방법
   const [initCgmData, initInsulinData] = await Promise.all([
     fetch(
-      `http://127.0.0.1:4000/dashboard/cgm?start_date=${formatedDay}&end_date=${formatedDay}`
+      `http://127.0.0.1:4000/dashboard/cgm?start_date=${formatedDay}&end_date=${formatedDay}`,
+      { next: { revalidate: 60 * 10 } }
     ).then((res) => res.json()),
     fetch(
-      `http://127.0.0.1:4000/dashboard/insulin?start_date=${formatedDay}&end_date=${formatedDay}`
+      `http://127.0.0.1:4000/dashboard/insulin?start_date=${formatedDay}&end_date=${formatedDay}`,
+      { next: { revalidate: 60 * 10 } }
     ).then((res) => res.json()),
   ]);
 
@@ -40,13 +49,11 @@ export default async function Home() {
               <CardDescription>
                 오늘 기록된 가장 최근 혈당입니다.
               </CardDescription>
-              {initCgmData[initCgmData.length - 1] ? (
-                isDangerState ? (
-                  <div className="py-3 px-4 rounded-md bg-primary/15 text-primary font-bold">
-                    ⚠️ 현재 {recentCgm > CGM_MAX ? '고' : '저'}
-                    혈당 상태입니다.
-                  </div>
-                ) : null
+              {isDangerState ? (
+                <div className="py-3 px-4 rounded-md bg-primary/15 text-primary font-bold">
+                  ⚠️ 현재 {recentCgm > CGM_MAX ? '고' : '저'}
+                  혈당 상태입니다.
+                </div>
               ) : null}
             </CardHeader>
             <CardContent className="mx-auto">
@@ -142,17 +149,23 @@ export default async function Home() {
         {/* 그래프 섹션 */}
         <section className="flex flex-col gap-4">
           <h3 className="font-bold">그래프 한 눈에 보기</h3>
-          <DashboardContent
-            initCgmData={initCgmData}
-            initInsulinData={initInsulinData}
-          />
+          <Suspense fallback={<div>로딩중...</div>}>
+            <DashboardContent
+              initCgmData={initCgmData}
+              initInsulinData={initInsulinData}
+            />
+          </Suspense>
         </section>
       </div>
 
       <section className="flex flex-col gap-4">
         <h3 className="font-bold">GlucoBeat와 건강 관리하기</h3>
-        <DiaSection />
-        <ReportSection />
+        <Suspense fallback={<div>데이터를 불러오는 중입니다...</div>}>
+          <DiaSection />
+        </Suspense>
+        <Suspense fallback={<div>데이터를 불러오는 중입니다...</div>}>
+          <ReportSection />
+        </Suspense>
       </section>
     </main>
   );
